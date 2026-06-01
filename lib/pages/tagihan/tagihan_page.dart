@@ -4,6 +4,7 @@ import '../../config/app_colors.dart';
 import '../../models/tagihan_model.dart';
 import '../../services/api_service.dart';
 import '../../services/storage_service.dart';
+import '../../utils/currency_format.dart';
 
 import 'detail_tagihan_page.dart';
 
@@ -57,13 +58,6 @@ class _TagihanPageState extends State<TagihanPage> {
         isLoading = false;
       });
     }
-  }
-
-  String rupiah(int value) {
-    return 'Rp ${value.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (match) => '${match[1]}.',
-        )}';
   }
 
   void showMessage(String message) {
@@ -172,9 +166,10 @@ class _TagihanPageState extends State<TagihanPage> {
                                         vertical: 6,
                                       ),
                                       decoration: BoxDecoration(
-                                        color:
-                                            statusColor(item).withOpacity(0.12),
-                                        borderRadius: BorderRadius.circular(30),
+                                        color: statusColor(item)
+                                            .withOpacity(0.12),
+                                        borderRadius:
+                                            BorderRadius.circular(30),
                                       ),
                                       child: Text(
                                         item.statusLabel,
@@ -190,8 +185,9 @@ class _TagihanPageState extends State<TagihanPage> {
 
                                 const SizedBox(height: 16),
 
+                                // PERBAIKAN: hapus cast "as int", pakai CurrencyFormat
                                 Text(
-                                  rupiah(item.totalTagihan),
+                                  CurrencyFormat.rupiah(item.totalTagihan),
                                   style: const TextStyle(
                                     fontSize: 26,
                                     fontWeight: FontWeight.bold,

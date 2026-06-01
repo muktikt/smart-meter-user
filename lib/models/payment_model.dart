@@ -4,7 +4,7 @@ class PaymentModel {
 
   final String invoiceId;
   final String paymentGateway;
-  final int amount;
+  final double amount;
   final String metodePembayaran;
   final String status;
   final String? paymentUrl;
@@ -33,7 +33,7 @@ class PaymentModel {
       tagihanId: int.tryParse(json['tagihan_id'].toString()) ?? 0,
       invoiceId: json['invoice_id']?.toString() ?? '',
       paymentGateway: json['payment_gateway']?.toString() ?? 'dompetx',
-      amount: int.tryParse(json['amount'].toString()) ?? 0,
+      amount: double.tryParse(json['amount'].toString()) ?? 0,
       metodePembayaran: json['metode_pembayaran']?.toString() ?? 'checkout',
       status: json['status']?.toString() ?? 'pending',
       paymentUrl: json['payment_url']?.toString(),

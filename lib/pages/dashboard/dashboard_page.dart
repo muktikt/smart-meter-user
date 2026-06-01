@@ -4,6 +4,7 @@ import '../../config/app_colors.dart';
 import '../../models/tagihan_model.dart';
 import '../../services/api_service.dart';
 import '../../services/storage_service.dart';
+import '../../utils/currency_format.dart';
 
 import '../auth/login_page.dart';
 import '../tagihan/tagihan_page.dart';
@@ -74,12 +75,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  String rupiah(int value) {
-    return 'Rp ${value.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (match) => '${match[1]}.',
-        )}';
-  }
+  // PERBAIKAN: hapus method rupiah() lokal, pakai CurrencyFormat
 
   @override
   Widget build(BuildContext context) {
@@ -343,8 +339,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
           const SizedBox(height: 8),
 
+          // PERBAIKAN: pakai CurrencyFormat.rupiah() bukan rupiah() lokal
           Text(
-            rupiah(tagihan.totalTagihan),
+            CurrencyFormat.rupiah(tagihan.totalTagihan),
             style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,

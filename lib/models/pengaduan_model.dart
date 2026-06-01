@@ -86,22 +86,16 @@ class PengaduanModel {
   // HELPER
   // ====================================
 
-  bool get isProses =>
-      status.toLowerCase() == 'proses';
-
-  bool get isSelesai =>
-      status.toLowerCase() == 'selesai';
+  bool get isPending => status.toLowerCase() == 'pending';
+  bool get isProses => status.toLowerCase() == 'proses';
+  bool get isSelesai => status.toLowerCase() == 'selesai';
 
   String get statusLabel {
     switch (status.toLowerCase()) {
-      case 'proses':
-        return 'Sedang Diproses';
-
-      case 'selesai':
-        return 'Selesai';
-
-      default:
-        return status;
+      case 'pending': return 'Menunggu Diproses';
+      case 'proses': return 'Sedang Diproses';
+      case 'selesai': return 'Selesai';
+      default: return status;
     }
   }
 

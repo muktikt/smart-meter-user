@@ -11,8 +11,8 @@ class TagihanModel {
   final String periode;
 
   final int pemakaian;
-  final int totalTagihan;
-  final int tarifPerM3;
+  final double totalTagihan;
+  final double tarifPerM3;
 
   final String status;
 
@@ -71,17 +71,9 @@ class TagihanModel {
       pemakaian:
           int.tryParse(json['pemakaian'].toString()) ?? 0,
 
-      totalTagihan:
-          int.tryParse(
-                json['total_tagihan'].toString(),
-              ) ??
-              0,
+      totalTagihan: double.tryParse(json['total_tagihan'].toString()) ?? 0,
 
-      tarifPerM3:
-          int.tryParse(
-                json['tarif_per_m3'].toString(),
-              ) ??
-              0,
+      tarifPerM3: double.tryParse(json['tarif_per_m3'].toString()) ?? 0,
 
       status:
           json['status']?.toString() ?? 'belum_bayar',
