@@ -1,19 +1,8 @@
 class ApiConfig {
   ApiConfig._();
 
-  static const String webLocal =
-      "http://127.0.0.1:8000/api";
-
-  static const String emulator =
-      "http://10.0.2.2:8000/api";
-
-  static const String local =
-      "http://192.168.1.100:8000/api";
-
-  static const String production =
-      "https://your-domain.com/api";
-
-  static const String baseUrl = webLocal;
+  // Ganti IP ini dengan IP Address laptop Anda jika berubah
+  static const String baseUrl = "http://172.20.10.9:8000/api";
 
   static const String login = "$baseUrl/login";
   static const String register = "$baseUrl/register";
