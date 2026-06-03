@@ -32,6 +32,26 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  static Future<Map<String, dynamic>> unifiedLogin({
+    required String identifier,
+    required String password,
+    String? deviceId,
+    String? deviceName,
+  }) async {
+    final response = await http.post(
+      Uri.parse(ApiConfig.unifiedLogin),
+      headers: headers,
+      body: {
+        'identifier': identifier,
+        'password': password,
+        if (deviceId != null) 'device_id': deviceId,
+        if (deviceName != null) 'device_name': deviceName,
+      },
+    );
+
+    return jsonDecode(response.body);
+  }
+
   static Future<Map<String, dynamic>> register({
     required String noPelanggan,
     required String email,
@@ -39,8 +59,6 @@ class ApiService {
     required String noHp,
     required String alamat,
     required String kecamatan,
-    required String latitude,
-    required String longitude,
   }) async {
     final response = await http.post(
       Uri.parse(ApiConfig.register),
@@ -52,8 +70,6 @@ class ApiService {
         'no_hp': noHp,
         'alamat': alamat,
         'kecamatan': kecamatan,
-        'latitude': latitude,
-        'longitude': longitude,
       },
     );
 
@@ -287,6 +303,153 @@ class ApiService {
   static Future<Map<String, dynamic>> readNotifikasi(int id) async {
     final response = await http.put(
       Uri.parse(ApiConfig.readNotifikasi(id)),
+      headers: headers,
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  // =========================
+  // PETUGAS API
+  // =========================
+
+  static Future<Map<String, dynamic>> petugasLogin({
+    required String kodePetugas,
+    required String password,
+    String? deviceId,
+    String? deviceName,
+  }) async {
+    final response = await http.post(
+      Uri.parse(ApiConfig.petugasLogin),
+      headers: headers,
+      body: {
+        'kode_petugas': kodePetugas,
+        'password': password,
+        if (deviceId != null) 'device_id': deviceId,
+        if (deviceName != null) 'device_name': deviceName,
+      },
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> getPetugasDashboard(int petugasId) async {
+    final response = await http.get(
+      Uri.parse(ApiConfig.petugasDashboard(petugasId)),
+      headers: headers,
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> getPetugasMeter(int petugasId) async {
+    final response = await http.get(
+      Uri.parse(ApiConfig.petugasMeter(petugasId)),
+      headers: headers,
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> getPetugasMeterDetail(int meterId) async {
+    final response = await http.get(
+      Uri.parse(ApiConfig.petugasMeterDetail(meterId)),
+      headers: headers,
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> validasiMeter({
+    required int meterId,
+    required int petugasId,
+  }) async {
+    final response = await http.post(
+      Uri.parse(ApiConfig.validasiMeter(meterId)),
+      headers: headers,
+      body: {
+        'petugas_id': petugasId.toString(),
+      },
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> warningMeter({
+    required int meterId,
+    required int petugasId,
+    required String catatanAnomali,
+  }) async {
+    final response = await http.post(
+      Uri.parse(ApiConfig.warningMeter(meterId)),
+      headers: headers,
+      body: {
+        'petugas_id': petugasId.toString(),
+        'catatan_anomali': catatanAnomali,
+      },
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> getPetugasMeterHistory(int petugasId) async {
+    final response = await http.get(
+      Uri.parse(ApiConfig.petugasMeterHistory(petugasId)),
+      headers: headers,
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> getPetugasPengaduan(int petugasId) async {
+    final response = await http.get(
+      Uri.parse(ApiConfig.petugasPengaduan(petugasId)),
+      headers: headers,
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> getPetugasPengaduanDetail(int pengaduanId) async {
+    final response = await http.get(
+      Uri.parse(ApiConfig.petugasPengaduanDetail(pengaduanId)),
+      headers: headers,
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> updatePengaduanStatus({
+    required int pengaduanId,
+    required int petugasId,
+    required String status,
+    String? catatanPetugas,
+  }) async {
+    final response = await http.post(
+      Uri.parse(ApiConfig.updatePengaduanStatus(pengaduanId)),
+      headers: headers,
+      body: {
+        'petugas_id': petugasId.toString(),
+        'status': status,
+        if (catatanPetugas != null) 'catatan_petugas': catatanPetugas,
+      },
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> getPetugasGangguan(int petugasId) async {
+    final response = await http.get(
+      Uri.parse(ApiConfig.petugasGangguan(petugasId)),
+      headers: headers,
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> getPetugasProfile(int petugasId) async {
+    final response = await http.get(
+      Uri.parse(ApiConfig.petugasProfile(petugasId)),
       headers: headers,
     );
 

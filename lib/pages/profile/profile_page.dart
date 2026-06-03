@@ -31,7 +31,7 @@ class _ProfilePageState extends State<ProfilePage> {
       final userId = await StorageService.getUserId();
       if (userId != null) {
         final res = await ApiService.getProfile(userId);
-        if (res['status'] == 'success') {
+        if (res['status'] == true) {
           setState(() {
             _profileData = res['data'];
           });

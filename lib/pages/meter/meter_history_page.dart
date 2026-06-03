@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../config/app_colors.dart';
+import '../../config/api_config.dart';
 import '../../models/meter_model.dart';
 import '../../services/api_service.dart';
 import '../../services/storage_service.dart';
@@ -31,7 +32,7 @@ class _MeterHistoryPageState extends State<MeterHistoryPage> {
       if (userId == null) return;
 
       final res = await ApiService.getMeterHistory(userId);
-      if (res['status'] == 'success') {
+      if (res['status'] == true) {
         final List data = res['data'];
         setState(() {
           _meterList = data.map((e) => MeterModel.fromJson(e)).toList();
@@ -118,18 +119,26 @@ class _MeterHistoryPageState extends State<MeterHistoryPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (meter.fotoMeter != null && meter.fotoMeter!.isNotEmpty)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      meter.fotoMeter!,
-                      width: 80,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
-                    ),
-                  )
-                else
+                if (meter.fotoMeter != null && meter.fotoMeter!.isNotEmpty) ...[
+                  Builder(
+                    builder: (context) {
+                      final String? hostUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+                      final String imagePath = meter.fotoMeter!.startsWith('http')
+                          ? meter.fotoMeter!
+                          : "$hostUrl/storage/${meter.fotoMeter}";
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          imagePath,
+                          width: 80,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                        ),
+                      );
+                    }
+                  ),
+                ] else
                   _buildImagePlaceholder(),
                 const SizedBox(width: 16),
                 Expanded(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../config/app_colors.dart';
+import '../../config/api_config.dart';
 import '../../models/gangguan_model.dart';
 import '../../services/api_service.dart';
 import '../../services/storage_service.dart';
@@ -34,7 +35,7 @@ class _GangguanPageState extends State<GangguanPage> {
 
       // 1. Get user profile to get kecamatan
       final profileRes = await ApiService.getProfile(userId);
-      if (profileRes['status'] == 'success') {
+      if (profileRes['status'] == true) {
         _userKecamatan = profileRes['data']['kecamatan'] ?? '';
       }
 
@@ -45,7 +46,7 @@ class _GangguanPageState extends State<GangguanPage> {
 
       // 2. Get gangguan list by kecamatan
       final gangguanRes = await ApiService.getGangguan(_userKecamatan);
-      if (gangguanRes['status'] == 'success') {
+      if (gangguanRes['status'] == true) {
         final List data = gangguanRes['data'];
         setState(() {
           _gangguanList = data.map((e) => GangguanModel.fromJson(e)).toList();
@@ -112,18 +113,26 @@ class _GangguanPageState extends State<GangguanPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (gangguan.foto != null && gangguan.foto!.isNotEmpty)
-              Image.network(
-                gangguan.foto!,
-                height: 150,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 150,
-                  color: Colors.grey.shade200,
-                  child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
-                ),
-              )
-            else
+            if (gangguan.foto != null && gangguan.foto!.isNotEmpty) ...[
+              Builder(
+                builder: (context) {
+                  final String? hostUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+                  final String imagePath = gangguan.foto!.startsWith('http')
+                      ? gangguan.foto!
+                      : "$hostUrl/storage/${gangguan.foto}";
+                  return Image.network(
+                    imagePath,
+                    height: 150,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 150,
+                      color: Colors.grey.shade200,
+                      child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                    ),
+                  );
+                }
+              ),
+            ] else
               Container(
                 height: 100,
                 color: AppColors.primary.withOpacity(0.1),

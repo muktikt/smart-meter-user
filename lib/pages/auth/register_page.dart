@@ -19,8 +19,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController noHpController = TextEditingController();
   final TextEditingController alamatController = TextEditingController();
   final TextEditingController kecamatanController = TextEditingController();
-  final TextEditingController latitudeController = TextEditingController();
-  final TextEditingController longitudeController = TextEditingController();
 
   bool isLoading = false;
   bool obscurePassword = true;
@@ -40,8 +38,6 @@ class _RegisterPageState extends State<RegisterPage> {
         noHp: noHpController.text.trim(),
         alamat: alamatController.text.trim(),
         kecamatan: kecamatanController.text.trim(),
-        latitude: latitudeController.text.trim(),
-        longitude: longitudeController.text.trim(),
       );
 
       if (response['status'] == true) {
@@ -92,8 +88,6 @@ class _RegisterPageState extends State<RegisterPage> {
     noHpController.dispose();
     alamatController.dispose();
     kecamatanController.dispose();
-    latitudeController.dispose();
-    longitudeController.dispose();
     super.dispose();
   }
 
@@ -256,48 +250,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     }
                     return null;
                   },
-                ),
-
-                const SizedBox(height: 16),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: latitudeController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Latitude',
-                          prefixIcon: Icon(Icons.my_location_outlined),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Latitude wajib diisi';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    Expanded(
-                      child: TextFormField(
-                        controller: longitudeController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Longitude',
-                          prefixIcon: Icon(Icons.explore_outlined),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Longitude wajib diisi';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
                 ),
 
                 const SizedBox(height: 30),

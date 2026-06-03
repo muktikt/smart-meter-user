@@ -1,16 +1,73 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../config/app_colors.dart';
 import '../../models/tagihan_model.dart';
+import '../../services/api_service.dart';
 import '../../utils/currency_format.dart';
 
-class DetailTagihanPage extends StatelessWidget {
+class DetailTagihanPage extends StatefulWidget {
   final TagihanModel tagihan;
 
   const DetailTagihanPage({
     super.key,
     required this.tagihan,
   });
+
+  @override
+  State<DetailTagihanPage> createState() => _DetailTagihanPageState();
+}
+
+class _DetailTagihanPageState extends State<DetailTagihanPage> {
+  bool _isPaymentLoading = false;
+
+  Future<void> _bayarSekarang() async {
+    setState(() => _isPaymentLoading = true);
+
+    try {
+      final response = await ApiService.createPayment(
+        tagihanId: widget.tagihan.id,
+      );
+
+      if (!mounted) return;
+
+      if (response['status'] == true) {
+        final paymentUrl = response['data']?['payment_url']?.toString();
+
+        if (paymentUrl != null && paymentUrl.isNotEmpty) {
+          final uri = Uri.parse(paymentUrl);
+
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          } else {
+            _showError('Tidak dapat membuka halaman pembayaran');
+          }
+        } else {
+          _showError('URL pembayaran tidak tersedia');
+        }
+      } else {
+        final message = response['message']?.toString() ?? 'Gagal membuat pembayaran';
+        _showError(message);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showError('Tidak dapat terhubung ke server');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isPaymentLoading = false);
+      }
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: AppColors.danger,
+        content: Text(message),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,11 +103,11 @@ class DetailTagihanPage extends StatelessWidget {
                 children: [
 
                   Icon(
-                    tagihan.isLunas
+                    widget.tagihan.isLunas
                         ? Icons.check_circle
                         : Icons.receipt_long,
                     size: 70,
-                    color: tagihan.isLunas
+                    color: widget.tagihan.isLunas
                         ? AppColors.success
                         : AppColors.primary,
                   ),
@@ -59,7 +116,7 @@ class DetailTagihanPage extends StatelessWidget {
 
                   Text(
                     CurrencyFormat.rupiah(
-                      tagihan.totalTagihan,
+                      widget.tagihan.totalTagihan,
                     ),
                     style: const TextStyle(
                       fontSize: 30,
@@ -76,16 +133,16 @@ class DetailTagihanPage extends StatelessWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: tagihan.isLunas
+                      color: widget.tagihan.isLunas
                           ? AppColors.success.withOpacity(0.15)
                           : AppColors.danger.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      tagihan.statusLabel,
+                      widget.tagihan.statusLabel,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: tagihan.isLunas
+                        color: widget.tagihan.isLunas
                             ? AppColors.success
                             : AppColors.danger,
                       ),
@@ -99,59 +156,59 @@ class DetailTagihanPage extends StatelessWidget {
 
             _detailCard(
               title: 'Periode',
-              value: tagihan.periode,
+              value: widget.tagihan.periode,
             ),
 
             _detailCard(
               title: 'Pemakaian',
-              value: '${tagihan.pemakaian} m³',
+              value: '${widget.tagihan.pemakaian} m³',
             ),
 
             _detailCard(
               title: 'Tarif per m³',
               value: CurrencyFormat.rupiah(
-                tagihan.tarifPerM3,
+                widget.tagihan.tarifPerM3,
               ),
             ),
 
             _detailCard(
               title: 'Total Tagihan',
               value: CurrencyFormat.rupiah(
-                tagihan.totalTagihan,
+                widget.tagihan.totalTagihan,
               ),
             ),
 
             _detailCard(
               title: 'Jatuh Tempo',
-              value: tagihan.jatuhTempo ?? '-',
+              value: widget.tagihan.jatuhTempo ?? '-',
             ),
 
             _detailCard(
               title: 'Invoice',
-              value: tagihan.invoiceNumber ?? '-',
+              value: widget.tagihan.invoiceNumber ?? '-',
             ),
 
             const SizedBox(height: 30),
 
-            if (tagihan.isBelumBayar)
+            if (widget.tagihan.isBelumBayar)
               SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Halaman pembayaran akan dibuat berikutnya',
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.payment),
-                  label: const Text(
-                    'Bayar Sekarang',
-                    style: TextStyle(
+                  onPressed: _isPaymentLoading ? null : _bayarSekarang,
+                  icon: _isPaymentLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : const Icon(Icons.payment),
+                  label: Text(
+                    _isPaymentLoading ? 'Memproses...' : 'Bayar Sekarang',
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),

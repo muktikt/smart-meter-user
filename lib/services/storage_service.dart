@@ -16,10 +16,44 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
 
     await prefs.setBool('is_login', true);
+    await prefs.setString('role', 'user');
     await prefs.setInt('user_id', id);
     await prefs.setString('nama', nama);
     await prefs.setString('email', email);
     await prefs.setString('no_pelanggan', noPelanggan);
+  }
+
+  static Future<void> savePetugas({
+    required int id,
+    required String nama,
+    required String email,
+    required String kodePetugas,
+    required String kecamatan,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool('is_login', true);
+    await prefs.setString('role', 'petugas');
+    await prefs.setInt('user_id', id); // We can use user_id to store petugas ID
+    await prefs.setString('nama', nama);
+    await prefs.setString('email', email);
+    await prefs.setString('kode_petugas', kodePetugas);
+    await prefs.setString('kecamatan', kecamatan);
+  }
+
+  static Future<String> getRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('role') ?? 'user';
+  }
+
+  static Future<String> getKecamatan() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('kecamatan') ?? '';
+  }
+
+  static Future<String> getKodePetugas() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('kode_petugas') ?? '';
   }
 
   // =====================================================

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../config/app_colors.dart';
+import '../../config/api_config.dart';
 import '../../models/gangguan_model.dart';
 
 class DetailGangguanPage extends StatelessWidget {
@@ -18,17 +19,26 @@ class DetailGangguanPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (gangguan.foto != null && gangguan.foto!.isNotEmpty)
-              Image.network(
-                gangguan.foto!,
-                height: 250,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 250,
-                  color: Colors.grey.shade200,
-                  child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
-                ),
-              )
+            if (gangguan.foto != null && gangguan.foto!.isNotEmpty) ...[
+              Builder(
+                builder: (context) {
+                  final String? hostUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+                  final String imagePath = gangguan.foto!.startsWith('http')
+                      ? gangguan.foto!
+                      : "$hostUrl/storage/${gangguan.foto}";
+                  return Image.network(
+                    imagePath,
+                    height: 250,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 250,
+                      color: Colors.grey.shade200,
+                      child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                    ),
+                  );
+                }
+              ),
+            ]
             else
               Container(
                 height: 200,

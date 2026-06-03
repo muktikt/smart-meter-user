@@ -7,6 +7,7 @@ import '../../services/storage_service.dart';
 
 import 'login_page.dart';
 import '../dashboard/dashboard_page.dart';
+import '../petugas/petugas_dashboard_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -30,27 +31,33 @@ class _SplashPageState extends State<SplashPage> {
     );
 
     final userId = await StorageService.getUserId();
+    final role = await StorageService.getRole();
 
     if (!mounted) return;
 
     if (userId != null) {
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const DashboardPage(),
-        ),
-      );
-
+      if (role == 'petugas') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const PetugasDashboardPage(),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const DashboardPage(),
+          ),
+        );
+      }
     } else {
-
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (_) => const LoginPage(),
         ),
       );
-
     }
   }
 
