@@ -6,7 +6,7 @@ import '../../services/api_service.dart';
 import '../../services/storage_service.dart';
 import '../../utils/currency_format.dart';
 
-import '../auth/login_page.dart';
+
 import '../tagihan/tagihan_page.dart';
 import '../tagihan/detail_tagihan_page.dart';
 import '../meter/upload_meter_page.dart';
@@ -27,6 +27,117 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _pages.addAll([
+      const _DashboardContent(),
+      const TagihanPage(isNested: true),
+      const MeterHistoryPage(isNested: true),
+      const ProfilePage(isNested: true),
+    ]);
+  }
+
+  static const List<String> _titles = [
+    'Smart Meter',
+    'Tagihan',
+    'Riwayat Meter',
+    'Profil Saya',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+
+      appBar: AppBar(
+        title: Text(_titles[_currentIndex]),
+        automaticallyImplyLeading: false,
+        actions: _currentIndex == 0
+            ? [
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const NotifikasiPage(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.notifications_none),
+                ),
+              ]
+            : null,
+      ),
+
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
+
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) => setState(() => _currentIndex = index),
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: Colors.grey.shade400,
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          unselectedLabelStyle: const TextStyle(fontSize: 12),
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard_outlined),
+              activeIcon: Icon(Icons.dashboard),
+              label: 'Beranda',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long_outlined),
+              activeIcon: Icon(Icons.receipt_long),
+              label: 'Tagihan',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history_outlined),
+              activeIcon: Icon(Icons.history),
+              label: 'Riwayat',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Profil',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+// The original dashboard body, extracted into its own widget
+// ──────────────────────────────────────────────────────────────
+class _DashboardContent extends StatefulWidget {
+  const _DashboardContent();
+
+  @override
+  State<_DashboardContent> createState() => _DashboardContentState();
+}
+
+class _DashboardContentState extends State<_DashboardContent> {
   String nama = '';
   String noPelanggan = '';
   int? userId;
@@ -101,234 +212,179 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  Future<void> logout() async {
-    await StorageService.logout();
-
-    if (!mounted) return;
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const LoginPage(),
-      ),
-      (route) => false,
-    );
-  }
-
-  // PERBAIKAN: hapus method rupiah() lokal, pakai CurrencyFormat
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-      appBar: AppBar(
-        title: const Text('Smart Meter'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const NotifikasiPage(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.notifications_none),
-          ),
-          IconButton(
-            onPressed: logout,
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
+    return RefreshIndicator(
+      onRefresh: loadDashboard,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
 
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : RefreshIndicator(
-              onRefresh: loadDashboard,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(22),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            AppColors.primary,
-                            AppColors.primaryDark,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Halo,',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 16,
-                            ),
-                          ),
-
-                          const SizedBox(height: 4),
-
-                          Text(
-                            nama.isEmpty ? 'Pelanggan' : nama,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(height: 8),
-
-                          Text(
-                            'No. Pelanggan: $noPelanggan',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    const Text(
-                      'Tagihan Terbaru',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    tagihanTerbaru == null
-                        ? _emptyTagihan()
-                        : _tagihanCard(),
-
-                    const SizedBox(height: 24),
-
-                    const Text(
-                      'Menu Utama',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
-                      childAspectRatio: 1.15,
-                      children: [
-                        _menuCard(
-                          icon: Icons.camera_alt_outlined,
-                          title: 'Upload Meter',
-                          color: AppColors.primary,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const UploadMeterPage(),
-                              ),
-                            );
-                          },
-                        ),
-
-                        _menuCard(
-                          icon: Icons.receipt_long_outlined,
-                          title: 'Tagihan',
-                          color: AppColors.success,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const TagihanPage(),
-                              ),
-                            );
-                          },
-                        ),
-
-                        _menuCard(
-                          icon: Icons.history_outlined,
-                          title: 'Riwayat Meter',
-                          color: AppColors.warning,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MeterHistoryPage(),
-                              ),
-                            );
-                          },
-                        ),
-
-                        _menuCard(
-                          icon: Icons.support_agent_outlined,
-                          title: 'Pengaduan',
-                          color: AppColors.danger,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const PengaduanPage(),
-                              ),
-                            );
-                          },
-                        ),
-
-                        _menuCard(
-                          icon: Icons.water_damage_outlined,
-                          title: 'Gangguan Air',
-                          color: Colors.blueGrey,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const GangguanPage(),
-                              ),
-                            );
-                          },
-                        ),
-
-                        _menuCard(
-                          icon: Icons.person_outline,
-                          title: 'Profil',
-                          color: Colors.purple,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ProfilePage(),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primaryDark,
                   ],
                 ),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Halo,',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 16,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    nama.isEmpty ? 'Pelanggan' : nama,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    'No. Pelanggan: $noPelanggan',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
               ),
             ),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              'Tagihan Terbaru',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            tagihanTerbaru == null
+                ? _emptyTagihan()
+                : _tagihanCard(),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              'Menu Utama',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: 1.15,
+              children: [
+                _menuCard(
+                  icon: Icons.camera_alt_outlined,
+                  title: 'Upload Meter',
+                  color: AppColors.primary,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const UploadMeterPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _menuCard(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Tagihan',
+                  color: AppColors.success,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TagihanPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _menuCard(
+                  icon: Icons.history_outlined,
+                  title: 'Riwayat Meter',
+                  color: AppColors.warning,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MeterHistoryPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _menuCard(
+                  icon: Icons.support_agent_outlined,
+                  title: 'Pengaduan',
+                  color: AppColors.danger,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PengaduanPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _menuCard(
+                  icon: Icons.water_damage_outlined,
+                  title: 'Gangguan Air',
+                  color: Colors.blueGrey,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const GangguanPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -37,10 +37,25 @@ class _DetailTagihanPageState extends State<DetailTagihanPage> {
         if (paymentUrl != null && paymentUrl.isNotEmpty) {
           final uri = Uri.parse(paymentUrl);
 
-          if (await canLaunchUrl(uri)) {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
-          } else {
-            _showError('Tidak dapat membuka halaman pembayaran');
+          // Try external browser first, then fall back to in-app
+          try {
+            final launched = await launchUrl(
+              uri,
+              mode: LaunchMode.externalApplication,
+            );
+            if (!launched) {
+              // Fallback: try in-app webview
+              await launchUrl(uri, mode: LaunchMode.inAppWebView);
+            }
+          } catch (_) {
+            // Final fallback: try platform default
+            try {
+              await launchUrl(uri, mode: LaunchMode.platformDefault);
+            } catch (e) {
+              if (mounted) {
+                _showError('Tidak dapat membuka halaman pembayaran: $e');
+              }
+            }
           }
         } else {
           _showError('URL pembayaran tidak tersedia');

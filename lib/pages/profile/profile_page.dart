@@ -9,7 +9,11 @@ import '../auth/splash_page.dart';
 import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  /// When true, the page is embedded inside a BottomNavigationBar tab
+  /// and will not show its own AppBar/Scaffold.
+  final bool isNested;
+
+  const ProfilePage({super.key, this.isNested = false});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -55,102 +59,136 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profil Saya'),
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text('Logout'),
+        content: const Text('Apakah Anda yakin ingin keluar?'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          TextButton(
             onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Logout'),
-                  content: const Text('Apakah Anda yakin ingin keluar?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Batal'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _logout();
-                      },
-                      child: const Text('Keluar', style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                ),
-              );
+              Navigator.pop(context);
+              _logout();
             },
+            child: const Text('Keluar', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
-      body: _isLoading
-          ? const LoadingWidget()
-          : _profileData == null
-              ? EmptyState(
-                  icon: Icons.person_off,
-                  title: 'Gagal memuat profil',
-                  message: 'Silakan coba lagi nanti',
-                  onRetry: _loadProfile,
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadProfile,
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      const Center(
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: AppColors.primary,
-                          child: Icon(Icons.person, size: 50, color: Colors.white),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _profileData!['nama'] ?? '-',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'No. Pelanggan: ${_profileData!['no_pelanggan'] ?? '-'}',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      _buildInfoItem('Email', _profileData!['email'] ?? '-'),
-                      _buildInfoItem('No. HP', _profileData!['no_hp'] ?? '-'),
-                      _buildInfoItem('Alamat', _profileData!['alamat'] ?? '-'),
-                      _buildInfoItem('Kecamatan', _profileData!['kecamatan'] ?? '-'),
-                      const SizedBox(height: 32),
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EditProfilePage(profileData: _profileData!),
-                            ),
-                          );
-                          if (result == true) {
-                            _loadProfile();
-                          }
-                        },
-                        icon: const Icon(Icons.edit),
-                        label: const Text('Edit Profil'),
-                      ),
-                    ],
-                  ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) return const LoadingWidget();
+
+    if (_profileData == null) {
+      return EmptyState(
+        icon: Icons.person_off,
+        title: 'Gagal memuat profil',
+        message: 'Silakan coba lagi nanti',
+        onRetry: _loadProfile,
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadProfile,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const SizedBox(height: 8),
+          const Center(
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: AppColors.primary,
+              child: Icon(Icons.person, size: 50, color: Colors.white),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _profileData!['nama'] ?? '-',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'No. Pelanggan: ${_profileData!['no_pelanggan'] ?? '-'}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 32),
+          _buildInfoItem('Email', _profileData!['email'] ?? '-'),
+          _buildInfoItem('No. HP', _profileData!['no_hp'] ?? '-'),
+          _buildInfoItem('Alamat', _profileData!['alamat'] ?? '-'),
+          _buildInfoItem('Kecamatan', _profileData!['kecamatan'] ?? '-'),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditProfilePage(profileData: _profileData!),
                 ),
+              );
+              if (result == true) {
+                _loadProfile();
+              }
+            },
+            icon: const Icon(Icons.edit),
+            label: const Text('Edit Profil'),
+          ),
+          const SizedBox(height: 16),
+
+          // Logout button — prominent and always visible
+          OutlinedButton.icon(
+            onPressed: _confirmLogout,
+            icon: const Icon(Icons.logout, color: Colors.red),
+            label: const Text(
+              'Keluar',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              side: const BorderSide(color: Colors.red, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // When nested inside BottomNavigationBar, skip the Scaffold/AppBar
+    if (widget.isNested) {
+      return _buildBody();
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profil Saya'),
+      ),
+      body: _buildBody(),
     );
   }
 
