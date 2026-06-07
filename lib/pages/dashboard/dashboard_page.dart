@@ -36,16 +36,16 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     _pages.addAll([
       const _DashboardContent(),
-      const TagihanPage(isNested: true),
-      const MeterHistoryPage(isNested: true),
+      const PengaduanPage(isNested: true),
+      const GangguanPage(isNested: true),
       const ProfilePage(isNested: true),
     ]);
   }
 
   static const List<String> _titles = [
     'Smart Meter',
-    'Tagihan',
-    'Riwayat Meter',
+    'Pengaduan',
+    'Gangguan Air',
     'Profil Saya',
   ];
 
@@ -106,14 +106,14 @@ class _DashboardPageState extends State<DashboardPage> {
               label: 'Beranda',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_outlined),
-              activeIcon: Icon(Icons.receipt_long),
-              label: 'Tagihan',
+              icon: Icon(Icons.support_agent_outlined),
+              activeIcon: Icon(Icons.support_agent),
+              label: 'Pengaduan',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.history_outlined),
-              activeIcon: Icon(Icons.history),
-              label: 'Riwayat',
+              icon: Icon(Icons.water_damage_outlined),
+              activeIcon: Icon(Icons.water_damage),
+              label: 'Gangguan',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),

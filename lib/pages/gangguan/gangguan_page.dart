@@ -10,7 +10,8 @@ import '../../widgets/loading_widget.dart';
 import 'detail_gangguan_page.dart';
 
 class GangguanPage extends StatefulWidget {
-  const GangguanPage({super.key});
+  final bool isNested;
+  const GangguanPage({super.key, this.isNested = false});
 
   @override
   State<GangguanPage> createState() => _GangguanPageState();
@@ -63,38 +64,46 @@ class _GangguanPageState extends State<GangguanPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Widget bodyContent = _isLoading
+        ? const LoadingWidget()
+        : _userKecamatan.isEmpty
+            ? EmptyState(
+                icon: Icons.location_off,
+                title: 'Kecamatan tidak ditemukan',
+                message: 'Silakan update profil Anda terlebih dahulu',
+                onRetry: _loadData,
+              )
+            : _gangguanList.isEmpty
+                ? EmptyState(
+                    icon: Icons.check_circle_outline,
+                    title: 'Tidak ada gangguan',
+                    message: 'Aliran air di kecamatan $_userKecamatan terpantau normal',
+                    onRetry: _loadData,
+                  )
+                : RefreshIndicator(
+                    onRefresh: _loadData,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _gangguanList.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final gangguan = _gangguanList[index];
+                        return _buildGangguanCard(gangguan);
+                      },
+                    ),
+                  );
+
+    if (widget.isNested) {
+      return Scaffold(
+        body: bodyContent,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Info Gangguan Air'),
       ),
-      body: _isLoading
-          ? const LoadingWidget()
-          : _userKecamatan.isEmpty
-              ? EmptyState(
-                  icon: Icons.location_off,
-                  title: 'Kecamatan tidak ditemukan',
-                  message: 'Silakan update profil Anda terlebih dahulu',
-                  onRetry: _loadData,
-                )
-              : _gangguanList.isEmpty
-                  ? EmptyState(
-                      icon: Icons.check_circle_outline,
-                      title: 'Tidak ada gangguan',
-                      message: 'Aliran air di kecamatan $_userKecamatan terpantau normal',
-                      onRetry: _loadData,
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _loadData,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _gangguanList.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 16),
-                        itemBuilder: (context, index) {
-                          final gangguan = _gangguanList[index];
-                          return _buildGangguanCard(gangguan);
-                        },
-                      ),
-                    ),
+      body: bodyContent,
     );
   }
 

@@ -8,7 +8,8 @@ import '../../widgets/loading_widget.dart';
 import 'petugas_pengaduan_detail_page.dart';
 
 class PetugasPengaduanListPage extends StatefulWidget {
-  const PetugasPengaduanListPage({super.key});
+  final bool isNested;
+  const PetugasPengaduanListPage({super.key, this.isNested = false});
 
   @override
   State<PetugasPengaduanListPage> createState() => _PetugasPengaduanListPageState();
@@ -60,23 +61,18 @@ class _PetugasPengaduanListPageState extends State<PetugasPengaduanListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Daftar Pengaduan'),
-      ),
-      body: isLoading
-          ? const LoadingWidget()
-          : listPengaduan.isEmpty
-              ? EmptyState(
-                  icon: Icons.rate_review,
-                  title: 'Tidak ada pengaduan',
-                  message: 'Pengaduan dari pelanggan di kecamatan Anda belum ada.',
-                  onRetry: _loadData,
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: ListView.separated(
+    final Widget bodyContent = isLoading
+        ? const LoadingWidget()
+        : listPengaduan.isEmpty
+            ? EmptyState(
+                icon: Icons.rate_review,
+                title: 'Tidak ada pengaduan',
+                message: 'Pengaduan dari pelanggan di kecamatan Anda belum ada.',
+                onRetry: _loadData,
+              )
+            : RefreshIndicator(
+                onRefresh: _loadData,
+                child: ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: listPengaduan.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -167,7 +163,21 @@ class _PetugasPengaduanListPageState extends State<PetugasPengaduanListPage> {
                       );
                     },
                   ),
-                ),
+                );
+
+    if (widget.isNested) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: bodyContent,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Daftar Pengaduan'),
+      ),
+      body: bodyContent,
     );
   }
 }

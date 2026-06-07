@@ -7,7 +7,8 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/loading_widget.dart';
 
 class PetugasGangguanPage extends StatefulWidget {
-  const PetugasGangguanPage({super.key});
+  final bool isNested;
+  const PetugasGangguanPage({super.key, this.isNested = false});
 
   @override
   State<PetugasGangguanPage> createState() => _PetugasGangguanPageState();
@@ -46,23 +47,18 @@ class _PetugasGangguanPageState extends State<PetugasGangguanPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Gangguan Air Aktif'),
-      ),
-      body: isLoading
-          ? const LoadingWidget()
-          : listGangguan.isEmpty
-              ? EmptyState(
-                  icon: Icons.water_drop_outlined,
-                  title: 'Aliran air normal',
-                  message: 'Tidak ada info gangguan air aktif di kecamatan Anda.',
-                  onRetry: _loadData,
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: ListView.separated(
+    final Widget bodyContent = isLoading
+        ? const LoadingWidget()
+        : listGangguan.isEmpty
+            ? EmptyState(
+                icon: Icons.water_drop_outlined,
+                title: 'Aliran air normal',
+                message: 'Tidak ada info gangguan air aktif di kecamatan Anda.',
+                onRetry: _loadData,
+              )
+            : RefreshIndicator(
+                onRefresh: _loadData,
+                child: ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: listGangguan.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -122,7 +118,21 @@ class _PetugasGangguanPageState extends State<PetugasGangguanPage> {
                       );
                     },
                   ),
-                ),
+                );
+
+    if (widget.isNested) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: bodyContent,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Gangguan Air Aktif'),
+      ),
+      body: bodyContent,
     );
   }
 

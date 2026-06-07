@@ -10,7 +10,8 @@ import 'create_pengaduan_page.dart';
 import 'detail_pengaduan_page.dart';
 
 class PengaduanPage extends StatefulWidget {
-  const PengaduanPage({super.key});
+  final bool isNested;
+  const PengaduanPage({super.key, this.isNested = false});
 
   @override
   State<PengaduanPage> createState() => _PengaduanPageState();
@@ -50,47 +51,58 @@ class _PengaduanPageState extends State<PengaduanPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Widget bodyContent = _isLoading
+        ? const LoadingWidget()
+        : _pengaduanList.isEmpty
+            ? EmptyState(
+                icon: Icons.support_agent,
+                title: 'Belum ada pengaduan',
+                message: 'Riwayat pengaduan Anda akan muncul di sini',
+                onRetry: _loadData,
+              )
+            : RefreshIndicator(
+                onRefresh: _loadData,
+                child: ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _pengaduanList.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final pengaduan = _pengaduanList[index];
+                    return _buildPengaduanCard(pengaduan);
+                  },
+                ),
+              );
+
+    final Widget fab = FloatingActionButton.extended(
+      onPressed: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const CreatePengaduanPage(),
+          ),
+        );
+        if (result == true) {
+          _loadData();
+        }
+      },
+      backgroundColor: AppColors.primary,
+      icon: const Icon(Icons.add, color: Colors.white),
+      label: const Text('Buat Pengaduan', style: TextStyle(color: Colors.white)),
+    );
+
+    if (widget.isNested) {
+      return Scaffold(
+        body: bodyContent,
+        floatingActionButton: fab,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riwayat Pengaduan'),
       ),
-      body: _isLoading
-          ? const LoadingWidget()
-          : _pengaduanList.isEmpty
-              ? EmptyState(
-                  icon: Icons.support_agent,
-                  title: 'Belum ada pengaduan',
-                  message: 'Riwayat pengaduan Anda akan muncul di sini',
-                  onRetry: _loadData,
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _pengaduanList.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final pengaduan = _pengaduanList[index];
-                      return _buildPengaduanCard(pengaduan);
-                    },
-                  ),
-                ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const CreatePengaduanPage(),
-            ),
-          );
-          if (result == true) {
-            _loadData();
-          }
-        },
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Buat Pengaduan', style: TextStyle(color: Colors.white)),
-      ),
+      body: bodyContent,
+      floatingActionButton: fab,
     );
   }
 
