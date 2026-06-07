@@ -34,7 +34,7 @@ class _PengaduanPageState extends State<PengaduanPage> {
       if (userId == null) return;
 
       final res = await ApiService.getPengaduanHistory(userId);
-      if (res['status'] == 'success') {
+      if (res['status'] == true || res['status'] == 'success') {
         final List data = res['data'];
         setState(() {
           _pengaduanList = data.map((e) => PengaduanModel.fromJson(e)).toList();

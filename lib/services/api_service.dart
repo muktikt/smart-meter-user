@@ -424,16 +424,32 @@ class ApiService {
     required int petugasId,
     required String status,
     String? catatanPetugas,
+    File? fotoBukti,
   }) async {
-    final response = await http.post(
+    final request = http.MultipartRequest(
+      'POST',
       Uri.parse(ApiConfig.updatePengaduanStatus(pengaduanId)),
-      headers: headers,
-      body: {
-        'petugas_id': petugasId.toString(),
-        'status': status,
-        if (catatanPetugas != null) 'catatan_petugas': catatanPetugas,
-      },
     );
+
+    request.headers.addAll(headers);
+
+    request.fields['petugas_id'] = petugasId.toString();
+    request.fields['status'] = status;
+    if (catatanPetugas != null) {
+      request.fields['catatan_petugas'] = catatanPetugas;
+    }
+
+    if (fotoBukti != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'foto_bukti',
+          fotoBukti.path,
+        ),
+      );
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
 
     return jsonDecode(response.body);
   }

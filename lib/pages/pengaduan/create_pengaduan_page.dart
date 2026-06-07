@@ -88,7 +88,7 @@ class _CreatePengaduanPageState extends State<CreatePengaduanPage> {
         foto: _fotoFile,
       );
 
-      if (res['status'] == 'success') {
+      if (res['status'] == true || res['status'] == 'success') {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Pengaduan berhasil dibuat')),

@@ -352,34 +352,6 @@ class _DashboardContentState extends State<_DashboardContent> {
                     );
                   },
                 ),
-
-                _menuCard(
-                  icon: Icons.support_agent_outlined,
-                  title: 'Pengaduan',
-                  color: AppColors.danger,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PengaduanPage(),
-                      ),
-                    );
-                  },
-                ),
-
-                _menuCard(
-                  icon: Icons.water_damage_outlined,
-                  title: 'Gangguan Air',
-                  color: Colors.blueGrey,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const GangguanPage(),
-                      ),
-                    );
-                  },
-                ),
               ],
             ),
           ],
@@ -530,13 +502,21 @@ class _DashboardContentState extends State<_DashboardContent> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
         ),
-        title: const Row(
+        titlePadding: const EdgeInsets.only(left: 24, right: 8, top: 12, bottom: 0),
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-            SizedBox(width: 8),
-            Text(
-              'Info Gangguan Air',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Info Gangguan Air',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.close, color: Colors.grey),
+              tooltip: 'Tutup',
             ),
           ],
         ),
@@ -573,13 +553,6 @@ class _DashboardContentState extends State<_DashboardContent> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.grey,
-            ),
-            child: const Text('Tutup'),
-          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);

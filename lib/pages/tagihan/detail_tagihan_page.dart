@@ -5,6 +5,7 @@ import '../../config/app_colors.dart';
 import '../../models/tagihan_model.dart';
 import '../../services/api_service.dart';
 import '../../utils/currency_format.dart';
+import 'payment_webview_page.dart';
 
 class DetailTagihanPage extends StatefulWidget {
   final TagihanModel tagihan;
@@ -35,27 +36,19 @@ class _DetailTagihanPageState extends State<DetailTagihanPage> {
         final paymentUrl = response['data']?['payment_url']?.toString();
 
         if (paymentUrl != null && paymentUrl.isNotEmpty) {
-          final uri = Uri.parse(paymentUrl);
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PaymentWebViewPage(
+                paymentUrl: paymentUrl,
+                title: 'Pembayaran Tagihan',
+              ),
+            ),
+          );
 
-          // Try external browser first, then fall back to in-app
-          try {
-            final launched = await launchUrl(
-              uri,
-              mode: LaunchMode.externalApplication,
-            );
-            if (!launched) {
-              // Fallback: try in-app webview
-              await launchUrl(uri, mode: LaunchMode.inAppWebView);
-            }
-          } catch (_) {
-            // Final fallback: try platform default
-            try {
-              await launchUrl(uri, mode: LaunchMode.platformDefault);
-            } catch (e) {
-              if (mounted) {
-                _showError('Tidak dapat membuka halaman pembayaran: $e');
-              }
-            }
+          if (result == true) {
+            // Refresh data tagihan or trigger check status if needed
+            Navigator.pop(context, true); // go back to TagihanList with refresh request
           }
         } else {
           _showError('URL pembayaran tidak tersedia');

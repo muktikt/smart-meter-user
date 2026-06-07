@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../config/api_config.dart';
 import '../../config/app_colors.dart';
@@ -26,6 +29,7 @@ class _PetugasPengaduanDetailPageState extends State<PetugasPengaduanDetailPage>
   int petugasId = 0;
 
   final TextEditingController catatanController = TextEditingController();
+  File? _fotoBukti;
 
   @override
   void initState() {
@@ -57,10 +61,49 @@ class _PetugasPengaduanDetailPageState extends State<PetugasPengaduanDetailPage>
     }
   }
 
+  Future<void> _pickFotoBukti() async {
+    final ImagePicker picker = ImagePicker();
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Galeri'),
+              onTap: () async {
+                Navigator.pop(context);
+                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                if (image != null) {
+                  setState(() => _fotoBukti = File(image.path));
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text('Kamera'),
+              onTap: () async {
+                Navigator.pop(context);
+                final XFile? image = await picker.pickImage(source: ImageSource.camera);
+                if (image != null) {
+                  setState(() => _fotoBukti = File(image.path));
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _updateStatus(String status) async {
     final catatan = catatanController.text.trim();
     if (status == 'selesai' && catatan.isEmpty) {
       AppHelper.showError(context, 'Catatan penyelesaian wajib diisi untuk status Selesai.');
+      return;
+    }
+    if (status == 'selesai' && _fotoBukti == null) {
+      AppHelper.showError(context, 'Foto bukti penyelesaian wajib diunggah untuk status Selesai.');
       return;
     }
 
@@ -78,6 +121,7 @@ class _PetugasPengaduanDetailPageState extends State<PetugasPengaduanDetailPage>
           petugasId: petugasId,
           status: status,
           catatanPetugas: catatan.isNotEmpty ? catatan : null,
+          fotoBukti: _fotoBukti,
         );
 
         if (res['status'] == true) {
@@ -243,6 +287,92 @@ class _PetugasPengaduanDetailPageState extends State<PetugasPengaduanDetailPage>
                         _buildDetailRow('Nomor HP', noHp),
                         _buildDetailRow('Kecamatan', kecamatan),
                         _buildDetailRow('Alamat', alamat),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Foto Bukti Penyelesaian
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Foto Bukti Penyelesaian',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        ),
+                        const Divider(height: 20),
+                        if (status.toLowerCase() == 'selesai' && dataPengaduan!['foto_bukti'] != null) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              "$hostUrl/storage/${dataPengaduan!['foto_bukti']}",
+                              width: double.infinity,
+                              height: 200,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 20),
+                                  child: Icon(Icons.broken_image, size: 60, color: Colors.grey),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ] else if (status.toLowerCase() == 'selesai') ...[
+                          const Text(
+                            'Tidak ada foto bukti.',
+                            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                          ),
+                        ] else ...[
+                          InkWell(
+                            onTap: _pickFotoBukti,
+                            child: Container(
+                              height: 150,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.grey.shade50,
+                              ),
+                              child: _fotoBukti != null
+                                  ? Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: Image.file(_fotoBukti!, fit: BoxFit.cover),
+                                        ),
+                                        Positioned(
+                                          top: 8,
+                                          right: 8,
+                                          child: InkWell(
+                                            onTap: () => setState(() => _fotoBukti = null),
+                                            child: Container(
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: const BoxDecoration(
+                                                color: Colors.black54,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(Icons.close, color: Colors.white, size: 20),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : const Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.camera_alt, size: 40, color: Colors.grey),
+                                        SizedBox(height: 8),
+                                        Text('Tap untuk mengambil foto bukti', style: TextStyle(color: Colors.grey)),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

@@ -331,17 +331,6 @@ class _PetugasDashboardContentState extends State<_PetugasDashboardContent> {
 
               // Quick Menu List
               _buildMenuItem(
-                title: 'Informasi Gangguan Air',
-                subtitle: 'Pantau pipa bocor & perbaikan aktif',
-                icon: Icons.water_damage_outlined,
-                color: Colors.blue.shade700,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const PetugasGangguanPage()),
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildMenuItem(
                 title: 'Riwayat Pekerjaan Saya',
                 subtitle: 'Semua validasi meter yang telah diproses',
                 icon: Icons.history,
